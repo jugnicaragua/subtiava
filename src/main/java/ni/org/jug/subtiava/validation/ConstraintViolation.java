@@ -36,10 +36,6 @@ public final class ConstraintViolation {
         return new ConstraintViolation(String.format(message, args));
     }
 
-    public static ConstraintViolation of(String pojo, String field, String message, Object... args) {
-        return new ConstraintViolation(pojo, field, resolveMessage(field, message, args));
-    }
-
     private static String resolveMessage(String field, String message, Object... args) {
         if (message.contains(FIELD_TOKEN)) {
             message = message.replace(FIELD_TOKEN, '[' + field + ']');

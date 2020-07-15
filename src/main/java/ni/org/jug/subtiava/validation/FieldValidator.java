@@ -3,6 +3,7 @@ package ni.org.jug.subtiava.validation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -18,19 +19,28 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     public static final String FIELD_CANT_BE_NOT_NULL = "[fieldName] cant' be not null";
     public static final String FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO = "[fieldName] must be greater than or equal to %s";
     public static final String FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO = "[fieldName] must be less than or equal to %s";
+    public static final String FIELD_MUST_BE_WITHIN_OPTIONS = "[fieldName] must be one of the following values %s";
+    public static final String FIELD_MUST_BE_A_POSITIVE_VALUE = "[fieldName] must be a positive value";
+    public static final String FIELD_MUST_BE_A_NEGATIVE_VALUE = "[fieldName] must be a negative value";
 
     private final ValidatorBuilder builder;
     private final Supplier<?> fieldSupplier;
     private final String attributeName;
+
     private boolean notNull;
     private boolean alwaysNull;
     private boolean notBlank;
+    private Integer minLength;
+    private Integer maxLength;
+
     private Long min;
     private Long max;
     private BigDecimal minWithDecimals;
     private BigDecimal maxWithDecimals;
-    private Integer minLength;
-    private Integer maxLength;
+    private boolean positive;
+    private boolean negative;
+    private long[] longValues;
+    private BigDecimal[] bigDecimalValues;
 
     public FieldValidator(ValidatorBuilder builder, Supplier<?> fieldSupplier) {
         this(builder, fieldSupplier, "attribute");
@@ -45,61 +55,108 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     @Override
     public FieldValidator notNull() {
         notNull = true;
+        alwaysNull = false;
         return this;
     }
 
     @Override
     public FieldValidator alwaysNull() {
         alwaysNull = true;
+        notNull = false;
         return this;
     }
 
     @Override
     public FieldValidator min(long value) {
         min = value;
+        minWithDecimals = null;
+        positive = false;
+        negative = false;
         return this;
     }
 
     @Override
     public FieldValidator max(long value) {
         max = value;
+        maxWithDecimals = null;
+        positive = false;
+        negative = false;
         return this;
     }
 
     @Override
     public FieldValidator min(BigDecimal value) {
-        min = null;
         minWithDecimals = value;
+        min = null;
+        positive = false;
+        negative = false;
         return this;
     }
 
     @Override
     public FieldValidator max(BigDecimal value) {
-        max = null;
         maxWithDecimals = value;
+        max = null;
+        positive = false;
+        negative = false;
         return this;
     }
 
     @Override
     public FieldValidator positive() {
-        min = 1l;
+        positive = true; // rather than use minWithDecimals
+        min = null;
+        minWithDecimals = null;
+        max = null;
+        maxWithDecimals = null;
+        negative = false;
         return this;
     }
 
     @Override
     public FieldValidator negative() {
-        max = -1l;
+        negative = true; // rather than use maxWithDecimals
+        max = null;
+        maxWithDecimals = null;
+        min = null;
+        minWithDecimals = null;
+        positive = false;
         return this;
     }
 
     @Override
-    public FieldValidator values(long first, long second, long... moreOptions) {
-        return null;
+    public FieldValidator values(long first, long... moreOptions) {
+        int size = moreOptions == null || moreOptions.length == 0 ? 1 : moreOptions.length + 1;
+
+        longValues = new long[size];
+        longValues[0] = first;
+        if (!(moreOptions == null || moreOptions.length == 0)) {
+            System.arraycopy(moreOptions, 0, longValues, 1, moreOptions.length);
+        }
+        bigDecimalValues = null;
+
+        return this;
     }
 
     @Override
     public FieldValidator values(BigDecimal first, BigDecimal second, BigDecimal... moreOptions) {
-        return null;
+        int size = (first != null ? 1 : 0) + (second != null ? 1 : 0)
+                + (moreOptions == null || moreOptions.length == 0 ? 0 : moreOptions.length);
+        int i = 0;
+
+        bigDecimalValues = new BigDecimal[size];
+        if (first != null) {
+            bigDecimalValues[i++] = first;
+        }
+        if (second != null) {
+            bigDecimalValues[i++] = second;
+        }
+        if (!(moreOptions == null || moreOptions.length == 0)) {
+            System.arraycopy(moreOptions, 0, bigDecimalValues, i, moreOptions.length);
+        }
+        longValues = null;
+
+        return this;
     }
 
     @Override
@@ -148,23 +205,16 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     @Override
     public List<ConstraintViolation> validate() {
-        validateInconsistencies();
-
         List<ConstraintViolation> violations = new LinkedList<>();
 
         violations.addAll(validateNullability());
 
         if (fieldValue() != null) {
             violations.addAll(validateMinAndMax());
+            violations.addAll(validateNumericOptions());
         }
 
         return violations;
-    }
-
-    private void validateInconsistencies() throws IllegalArgumentException {
-        if (notNull && alwaysNull) {
-            throw new IllegalArgumentException("[field] can't be not null and null at the same time");
-        }
     }
 
     private List<ConstraintViolation> validateNullability() {
@@ -188,6 +238,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         List<ConstraintViolation> violations = new ArrayList<>();
 
         if (isNumber()) {
+            if (positive && valueAsLong() < 1) {
+                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_POSITIVE_VALUE));
+            }
+            if (negative && valueAsLong() > -1) {
+                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_NEGATIVE_VALUE));
+            }
             if (min != null) {
                 if (valueAsLong() < min) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO, min));
@@ -199,18 +255,57 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
                 }
             }
         }
-        if (fieldValue() instanceof BigDecimal) {
+        if (isTypeOf(BigDecimal.class)) {
+            if (positive && valueAsBigDecimal().signum() < 1) {
+                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_POSITIVE_VALUE));
+            }
+            if (negative && valueAsBigDecimal().signum() > -1) {
+                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_NEGATIVE_VALUE));
+            }
             if (minWithDecimals != null) {
-                if (valueAsBigDecimal().compareTo(minWithDecimals) < 0) {
+                if (lessThan(valueAsBigDecimal(), minWithDecimals)) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO,
                             minWithDecimals.toPlainString()));
                 }
             }
             if (maxWithDecimals != null) {
-                if (valueAsBigDecimal().compareTo(maxWithDecimals) > 0) {
+                if (greaterThan(valueAsBigDecimal(), maxWithDecimals)) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO,
                             maxWithDecimals.toPlainString()));
                 }
+            }
+        }
+
+        return violations;
+    }
+
+    private List<ConstraintViolation> validateNumericOptions() {
+        List<ConstraintViolation> violations = new ArrayList<>();
+
+        if (isNumber() && longValues != null) {
+            boolean found = false;
+            long value = valueAsLong();
+            for (int i = 0; i < longValues.length; i++) {
+                if (value == longValues[i]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(longValues)));
+            }
+        }
+        if (isTypeOf(BigDecimal.class) && bigDecimalValues != null) {
+            boolean found = false;
+            BigDecimal value = valueAsBigDecimal();
+            for (int i = 0; i < bigDecimalValues.length; i++) {
+                if (equals(value, bigDecimalValues[i])) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(bigDecimalValues)));
             }
         }
 
@@ -225,6 +320,10 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         Object value = fieldValue();
         return value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long ||
                 value instanceof BigInteger || value instanceof BigDecimal;
+    }
+
+    private boolean isTypeOf(Class<?> type) {
+        return type.isAssignableFrom(fieldValue().getClass());
     }
 
     private long valueAsLong() {
@@ -253,5 +352,17 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     @Override
     public Validator instance() {
         return builder.instance();
+    }
+
+    private static boolean lessThan(BigDecimal left, BigDecimal right) {
+        return !(left == null || right == null) ? left.compareTo(right) < 0 : false;
+    }
+
+    private static boolean greaterThan(BigDecimal left, BigDecimal right) {
+        return !(left == null || right == null) ? left.compareTo(right) > 0 : false;
+    }
+
+    private static boolean equals(BigDecimal left, BigDecimal right) {
+        return !(left == null || right == null) ? left.compareTo(right) == 0 : false;
     }
 }

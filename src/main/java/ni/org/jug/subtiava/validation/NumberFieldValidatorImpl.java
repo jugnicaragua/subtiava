@@ -52,8 +52,8 @@ public class NumberFieldValidatorImpl implements NumberFieldValidator {
     }
 
     @Override
-    public NumberFieldValidator values(long first, long second, long... moreOptions) {
-        delegate.values(first, second, moreOptions);
+    public NumberFieldValidator values(long first, long... moreOptions) {
+        delegate.values(first, moreOptions);
         return this;
     }
 

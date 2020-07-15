@@ -11,6 +11,7 @@ public class ValidatorTest {
     void validate_ApplySomeConstraints_PojoWithDataIssues() {
         Student student = new Student(10, 0, "Armando");
         student.gender = "This is a simple test";
+        student.status = 15;
 
         Validator validator = new Validator(Locale.getDefault())
                 .ofNumber(student::getAge)
@@ -26,6 +27,9 @@ public class ValidatorTest {
                 .ofString(student::getGender)
                 .notNull()
                 .values(Gender.class)
+                .ofNumber(student::getStatus)
+                .notNull()
+                .values(10, 20)
                 .instance();
 
         List<ConstraintViolation> violations = validator.validate();

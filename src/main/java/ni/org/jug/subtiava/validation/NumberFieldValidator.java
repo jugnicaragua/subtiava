@@ -26,14 +26,10 @@ public interface NumberFieldValidator<T extends NumberFieldValidator> extends Ba
     T negative();
 
     default T values(long value) {
-        return values(value, -1, null);
+        return values(value, null);
     }
 
-    default T values(long first, long second) {
-        return values(first, second, null);
-    }
-
-    T values(long first, long second, long... moreOptions);
+    T values(long first, long... moreOptions);
 
     default T values(BigDecimal value) {
         return values(value, null, null);

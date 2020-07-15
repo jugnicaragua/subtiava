@@ -10,6 +10,7 @@ public class Student {
     public Integer classesCount;
     public String name;
     public String gender;
+    public Integer status;
 
     public Student() {
     }
@@ -50,5 +51,13 @@ public class Student {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }
