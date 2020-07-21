@@ -9,7 +9,7 @@ public class ValidatorTest {
 
     @Test
     void validate_ApplySomeConstraints_PojoWithDataIssues() {
-        Student student = new Student(10, 0, "Armando");
+        Student student = new Student(10, 0, "Armando Jose 123");
         student.gender = "This is a simple test";
         student.status = 15;
 
@@ -23,7 +23,9 @@ public class ValidatorTest {
                 .positive()
                 .ofString(student::getName)
                 .notBlank()
-                .minLength(15)
+                .minLength(10)
+                .maxLength(100)
+                .regex("^[A-Za-z ]+")
                 .ofString(student::getGender)
                 .notNull()
                 .values(Gender.class)

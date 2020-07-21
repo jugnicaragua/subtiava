@@ -39,13 +39,25 @@ public interface StringFieldValidator<T extends StringFieldValidator> extends Ba
         return values(first, second, null);
     }
 
-    T values(Enum first, Enum second, Enum... moreOptions);
+    default T values(Enum first, Enum second, Enum... moreOptions) {
+        String[] enumValues = null;
+        if (Inputs.isNotEmpty(moreOptions)) {
+            enumValues = new String[moreOptions.length];
+            for (int i = 0; i < moreOptions.length; i++) {
+                Enum currentOption = moreOptions[i];
+                enumValues[i] = currentOption != null ? currentOption.name() : null;
+            }
+        }
+        return values(first != null ? first.name() : null, second != null ? second.name() : null, enumValues);
+    }
 
     default T values(Class<Enum> enumType) {
         return values(null, null, enumType.getEnumConstants());
     }
 
-    T regex(String pattern);
+    default T regex(String pattern) {
+        return regex(Pattern.compile(pattern));
+    }
 
     T regex(Pattern pattern);
 }

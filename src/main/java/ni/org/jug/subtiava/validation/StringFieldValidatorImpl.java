@@ -47,18 +47,6 @@ public class StringFieldValidatorImpl implements StringFieldValidator {
     }
 
     @Override
-    public StringFieldValidator values(Enum first, Enum second, Enum[] moreOptions) {
-        delegate.values(first, second, moreOptions);
-        return this;
-    }
-
-    @Override
-    public StringFieldValidator regex(String pattern) {
-        delegate.regex(pattern);
-        return this;
-    }
-
-    @Override
     public StringFieldValidator regex(Pattern pattern) {
         delegate.regex(pattern);
         return this;
