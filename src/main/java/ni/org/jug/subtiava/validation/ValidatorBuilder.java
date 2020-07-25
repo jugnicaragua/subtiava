@@ -13,5 +13,7 @@ public interface ValidatorBuilder {
 
     <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier);
 
+    <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier);
+
     Validator instance();
 }

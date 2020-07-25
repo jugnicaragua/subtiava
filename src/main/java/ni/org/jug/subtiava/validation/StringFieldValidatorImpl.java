@@ -85,6 +85,11 @@ public class StringFieldValidatorImpl implements StringFieldValidator {
     }
 
     @Override
+    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
+        return delegate.ofDate(fieldSupplier);
+    }
+
+    @Override
     public Validator instance() {
         return delegate.instance();
     }

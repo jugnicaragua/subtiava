@@ -1,6 +1,5 @@
 package ni.org.jug.subtiava.validation;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -8,70 +7,70 @@ import java.util.function.Supplier;
  * @author aalaniz
  * @version 1.0
  */
-public class NumberFieldValidatorImpl implements NumberFieldValidator {
+public class DateFieldValidatorImpl implements DateFieldValidator {
     private final FieldValidator delegate;
 
-    public NumberFieldValidatorImpl(FieldValidator delegate) {
+    public DateFieldValidatorImpl(FieldValidator delegate) {
         this.delegate = delegate;
     }
 
     @Override
-    public NumberFieldValidator min(long value) {
-        delegate.min(value);
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator max(long value) {
-        delegate.max(value);
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator min(BigDecimal value) {
-        delegate.min(value);
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator max(BigDecimal value) {
-        delegate.max(value);
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator positive() {
-        delegate.positive();
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator negative() {
-        delegate.negative();
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator values(long first, long... moreOptions) {
-        delegate.values(first, moreOptions);
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator values(BigDecimal first, BigDecimal second, BigDecimal... moreOptions) {
-        delegate.values(first, second, moreOptions);
-        return this;
-    }
-
-    @Override
-    public NumberFieldValidator notNull() {
+    public DateFieldValidator notNull() {
         delegate.notNull();
         return this;
     }
 
     @Override
-    public NumberFieldValidator alwaysNull() {
+    public DateFieldValidator alwaysNull() {
         delegate.alwaysNull();
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator past() {
+        delegate.past();
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator pastOrPresent() {
+        delegate.pastOrPresent();
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator future() {
+        delegate.future();
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator futureOrPresent() {
+        delegate.futureOrPresent();
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator age(int min, int max) {
+        delegate.age(min, max);
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator year(int min, int max) {
+        delegate.year(min, max);
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator month(int min, int max) {
+        delegate.month(min, max);
+        return this;
+    }
+
+    @Override
+    public DateFieldValidator day(int min, int max) {
+        delegate.day(min, max);
         return this;
     }
 

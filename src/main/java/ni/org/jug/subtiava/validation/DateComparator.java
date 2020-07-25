@@ -21,47 +21,121 @@ enum DateComparator {
     DATE(java.sql.Date.class, LocalDate.class) {
         @Override
         int doCompareDateToReferenceDate(Object date, long yearsToAdd) {
-            LocalDate fieldValue = date instanceof java.sql.Date ? ((java.sql.Date) date).toLocalDate() : (LocalDate) date;
+            LocalDate fieldValue = convertDateParam(date);
             LocalDate referenceDate = LocalDate.now().plusYears(yearsToAdd);
             return fieldValue.compareTo(referenceDate);
         }
-    },
-    CALENDAR(GregorianCalendar.class) {
+
         @Override
-        int doCompareDateToReferenceDate(Object date, long yearsToAdd) {
-            Calendar calendar = (Calendar) date;
-            LocalDateTime fieldValue = LocalDateTime.ofInstant(calendar.toInstant(), calendar.getTimeZone().toZoneId());
-            LocalDateTime referenceDate = LocalDateTime.now(calendar.getTimeZone().toZoneId()).plusYears(yearsToAdd);
-            return fieldValue.compareTo(referenceDate);
+        LocalDate convertDateParam(Object date) {
+            if (date instanceof java.sql.Date) {
+                return ((java.sql.Date) date).toLocalDate();
+            } else if (date instanceof LocalDate) {
+                return (LocalDate) date;
+            } else {
+                throw new IllegalArgumentException(String.format(UNSUPPORTED_DATE_TYPE, date.getClass().getName()));
+            }
+        }
+
+        @Override
+        public int getYear(Object date) {
+            return convertDateParam(date).getYear();
+        }
+
+        @Override
+        public int getMonth(Object date) {
+            return convertDateParam(date).getMonthValue();
+        }
+
+        @Override
+        public int getDay(Object date) {
+            return convertDateParam(date).getDayOfMonth();
         }
     },
-    ZONED(ZonedDateTime.class) {
+    ZONED_TIMESTAMP(GregorianCalendar.class, ZonedDateTime.class) {
         @Override
         int doCompareDateToReferenceDate(Object date, long yearsToAdd) {
-            ZonedDateTime fieldValue = (ZonedDateTime) date;
-            ZonedDateTime referenceDate = ZonedDateTime.now(fieldValue.getZone()).plusYears(yearsToAdd);
+            LocalDateTime fieldValue = convertDateParam(date);
+            LocalDateTime referenceDate = null;
+
+            if (date instanceof Calendar) {
+                Calendar calendar = (Calendar) date;
+                referenceDate = LocalDateTime.now(calendar.getTimeZone().toZoneId()).plusYears(yearsToAdd);
+            } else if (date instanceof ZonedDateTime) {
+                ZonedDateTime zoned = (ZonedDateTime) date;
+                referenceDate = ZonedDateTime.now(zoned.getZone()).plusYears(yearsToAdd).toLocalDateTime();
+            } else {
+                throw new IllegalArgumentException(String.format(UNSUPPORTED_DATE_TYPE, date.getClass().getName()));
+            }
+
             return fieldValue.compareTo(referenceDate);
+        }
+
+        @Override
+        LocalDateTime convertDateParam(Object date) {
+            if (date instanceof Calendar) {
+                Calendar calendar = (Calendar) date;
+                return LocalDateTime.ofInstant(calendar.toInstant(), calendar.getTimeZone().toZoneId());
+            } else if (date instanceof ZonedDateTime) {
+                return ((ZonedDateTime) date).toLocalDateTime();
+            } else {
+                throw new IllegalArgumentException(String.format(UNSUPPORTED_DATE_TYPE, date.getClass().getName()));
+            }
+        }
+
+        @Override
+        public int getYear(Object date) {
+            return convertDateParam(date).getYear();
+        }
+
+        @Override
+        public int getMonth(Object date) {
+            return convertDateParam(date).getMonthValue();
+        }
+
+        @Override
+        public int getDay(Object date) {
+            return convertDateParam(date).getDayOfMonth();
         }
     },
     TIMESTAMP(java.sql.Timestamp.class, Date.class, LocalDateTime.class) {
         @Override
         int doCompareDateToReferenceDate(Object date, long yearsToAdd) {
             LocalDateTime referenceDate = LocalDateTime.now().plusYears(yearsToAdd);
-            LocalDateTime fieldValue = null;
-
-            if (date instanceof java.sql.Timestamp) {
-                fieldValue = ((java.sql.Timestamp) date).toLocalDateTime();
-            } else if (date instanceof Date) {
-                fieldValue = ((Date) date).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            } else if (date instanceof LocalDateTime) {
-                fieldValue = (LocalDateTime) date;
-            }
-
+            LocalDateTime fieldValue = convertDateParam(date);
             return fieldValue.compareTo(referenceDate);
+        }
+
+        @Override
+        LocalDateTime convertDateParam(Object date) {
+            if (date instanceof java.sql.Timestamp) {
+                return ((java.sql.Timestamp) date).toLocalDateTime();
+            } else if (date instanceof Date) {
+                return ((Date) date).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } else if (date instanceof LocalDateTime) {
+                return (LocalDateTime) date;
+            } else {
+                throw new IllegalArgumentException(String.format(UNSUPPORTED_DATE_TYPE, date.getClass().getName()));
+            }
+        }
+
+        @Override
+        public int getYear(Object date) {
+            return convertDateParam(date).getYear();
+        }
+
+        @Override
+        public int getMonth(Object date) {
+            return convertDateParam(date).getMonthValue();
+        }
+
+        @Override
+        public int getDay(Object date) {
+            return convertDateParam(date).getDayOfMonth();
         }
     };
 
-    private static final String UNSUPPORTED_DATE_TYPE = "Can't verify the value, unsupported date type %s";
+    private static final String UNSUPPORTED_DATE_TYPE = "Unsupported date type %s";
 
     private static final Map<Class<?>, DateComparator> CACHE = new HashMap<>();
     static {
@@ -119,6 +193,14 @@ enum DateComparator {
     }
 
     abstract int doCompareDateToReferenceDate(Object date, long yearsToAdd);
+
+    abstract Object convertDateParam(Object date);
+
+    public abstract int getYear(Object date);
+
+    public abstract int getMonth(Object date);
+
+    public abstract int getDay(Object date);
 
     public static DateComparator ofType(Class<?> type) {
         DateComparator constraint = CACHE.get(type);

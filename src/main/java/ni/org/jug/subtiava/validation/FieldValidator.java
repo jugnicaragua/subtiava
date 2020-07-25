@@ -12,6 +12,7 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -37,9 +38,18 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     public static final String FIELD_MUST_BE_IN_THE_PAST_OR_PRESENT = "[fieldName] must be in the past or present";
     public static final String FIELD_MUST_BE_IN_THE_FUTURE = "[fieldName] must be in the future";
     public static final String FIELD_MUST_BE_IN_THE_FUTURE_OR_PRESENT = "[fieldName] must be in the future or present";
-    public static final String FIELD_MIN_AGE = "[fieldName]: the minimum age for this field is %d years";
-    public static final String FIELD_MAX_AGE = "[fieldName]: the maximum age for this field is %d years";
-    public static final String FIELD_EXACT_AGE = "[fieldName]: the exact age for this field is %d years";
+    public static final String FIELD_MIN_AGE = "[fieldName]: the minimum expected age for this field is %d years";
+    public static final String FIELD_MAX_AGE = "[fieldName]: the maximum expected age for this field is %d years";
+    public static final String FIELD_EQUAL_AGE = "[fieldName]: the expected age for this field is %d years";
+    public static final String FIELD_MIN_YEAR = "[fieldName]: the minimum expected year for this field is %d";
+    public static final String FIELD_MAX_YEAR = "[fieldName]: the maximum expected year for this field is %d";
+    public static final String FIELD_EQUAL_YEAR = "[fieldName]: the expected year for this field is %d";
+    public static final String FIELD_MIN_MONTH = "[fieldName]: the minimum expected month for this field is %d";
+    public static final String FIELD_MAX_MONTH = "[fieldName]: the maximum expected month for this field is %d";
+    public static final String FIELD_EQUAL_MONTH = "[fieldName]: the expected month for this field is %d";
+    public static final String FIELD_MIN_DAY = "[fieldName]: the minimum expected day for this field is %d";
+    public static final String FIELD_MAX_DAY = "[fieldName]: the maximum expected day for this field is %d";
+    public static final String FIELD_EQUAL_DAY = "[fieldName]: the expected day for this field is %d";
 
     public static final String INPUT_POSITIVE_VALUE_REQUIRED = "[%s] must be a positive value";
 
@@ -310,6 +320,9 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             violations.addAll(validateDateInPast());
             violations.addAll(validateDateInFuture());
             violations.addAll(validateAge());
+            violations.addAll(validateYear());
+            violations.addAll(validateMonth());
+            violations.addAll(validateDay());
         }
 
         return violations;
@@ -452,13 +465,13 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         List<ConstraintViolation> violations = new ArrayList<>();
 
         if (isDate()) {
-            DateComparator constraint = DateComparator.ofType(fieldClass());
+            DateComparator comparator = DateComparator.ofType(fieldClass());
             if (past) {
-                if (!constraint.isBefore(fieldValue())) {
+                if (!comparator.isBefore(fieldValue())) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_PAST));
                 }
             } else if (pastOrPresent) {
-                if (!constraint.isBeforeOrEqual(fieldValue())) {
+                if (!comparator.isBeforeOrEqual(fieldValue())) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_PAST_OR_PRESENT));
                 }
             }
@@ -471,13 +484,13 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         List<ConstraintViolation> violations = new ArrayList<>();
 
         if (isDate()) {
-            DateComparator constraint = DateComparator.ofType(fieldClass());
+            DateComparator comparator = DateComparator.ofType(fieldClass());
             if (future) {
-                if (!constraint.isAfter(fieldValue())) {
+                if (!comparator.isAfter(fieldValue())) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_FUTURE));
                 }
             } else if (futureOrPresent) {
-                if (!constraint.isAfterOrEqual(fieldValue())) {
+                if (!comparator.isAfterOrEqual(fieldValue())) {
                     violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_FUTURE_OR_PRESENT));
                 }
             }
@@ -490,20 +503,62 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         List<ConstraintViolation> violations = new ArrayList<>();
 
         if (isDate() && !(minAge == -1 && maxAge == -1)) {
-            DateComparator constraint = DateComparator.ofType(fieldClass());
+            DateComparator comparator = DateComparator.ofType(fieldClass());
             if (minAge == maxAge) {
-                if (!constraint.isEqualToAge(fieldValue(), minAge)) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_EXACT_AGE, minAge));
+                if (!comparator.isEqualToAge(fieldValue(), minAge)) {
+                    violations.add(ConstraintViolation.of(attributeName, FIELD_EQUAL_AGE, minAge));
                 }
             } else {
                 if (minAge != -1) {
-                    if (!constraint.isGreaterThanOrEqualToAge(fieldValue(), minAge)) {
+                    if (!comparator.isGreaterThanOrEqualToAge(fieldValue(), minAge)) {
                         violations.add(ConstraintViolation.of(attributeName, FIELD_MIN_AGE, minAge));
                     }
                 }
                 if (maxAge != -1) {
-                    if (!constraint.isLessThanOrEqualToAge(fieldValue(), maxAge)) {
+                    if (!comparator.isLessThanOrEqualToAge(fieldValue(), maxAge)) {
                         violations.add(ConstraintViolation.of(attributeName, FIELD_MAX_AGE, maxAge));
+                    }
+                }
+            }
+        }
+
+        return violations;
+    }
+
+    private List<ConstraintViolation> validateYear() {
+        IntSupplier yearSupplier = () -> DateComparator.ofType(fieldClass()).getYear(fieldValue());
+        return validateDateField(yearSupplier, minYear, maxYear, FIELD_MIN_YEAR, FIELD_MAX_YEAR, FIELD_EQUAL_YEAR);
+    }
+
+    private List<ConstraintViolation> validateMonth() {
+        IntSupplier monthSupplier = () -> DateComparator.ofType(fieldClass()).getMonth(fieldValue());
+        return validateDateField(monthSupplier, minMonth, maxMonth, FIELD_MIN_MONTH, FIELD_MAX_MONTH, FIELD_EQUAL_MONTH);
+    }
+
+    private List<ConstraintViolation> validateDay() {
+        IntSupplier daySupplier = () -> DateComparator.ofType(fieldClass()).getDay(fieldValue());
+        return validateDateField(daySupplier, minDay, maxDay, FIELD_MIN_DAY, FIELD_MAX_DAY, FIELD_EQUAL_DAY);
+    }
+
+    private List<ConstraintViolation> validateDateField(IntSupplier dateFieldSupplier, int min, int max, String messageForMin,
+            String messageForMax, String messageForEqual) {
+        List<ConstraintViolation> violations = new ArrayList<>();
+
+        if (isDate() && !(min == -1 && max == -1)) {
+            int dateField = dateFieldSupplier.getAsInt();
+            if (min == max) {
+                if (dateField != min) {
+                    violations.add(ConstraintViolation.of(attributeName, messageForEqual, min));
+                }
+            } else {
+                if (min != -1) {
+                    if (dateField < min) {
+                        violations.add(ConstraintViolation.of(attributeName, messageForMin, min));
+                    }
+                }
+                if (max != -1) {
+                    if (dateField > max) {
+                        violations.add(ConstraintViolation.of(attributeName, messageForMax, max));
                     }
                 }
             }
@@ -573,6 +628,11 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     @Override
     public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier) {
         return builder.ofNumber(fieldSupplier);
+    }
+
+    @Override
+    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
+        return builder.ofDate(fieldSupplier);
     }
 
     @Override

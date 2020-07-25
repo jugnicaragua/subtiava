@@ -11,7 +11,6 @@ import java.util.function.Supplier;
  * @version 1.0
  */
 public class Validator implements ValidatorBuilder {
-    // TODO Considerar el uso de Set
     private final List<FieldValidator> validators = new LinkedList<>();
     private final Locale locale;
 
@@ -33,6 +32,11 @@ public class Validator implements ValidatorBuilder {
     @Override
     public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier) {
         return new NumberFieldValidatorImpl(addValidator(fieldSupplier));
+    }
+
+    @Override
+    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
+        return new DateFieldValidatorImpl(addValidator(fieldSupplier));
     }
 
     @Override
