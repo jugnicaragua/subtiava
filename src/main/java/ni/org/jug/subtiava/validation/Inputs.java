@@ -8,7 +8,9 @@ import java.util.function.BiPredicate;
  * @version 1.0
  */
 public final class Inputs {
-    public static final String INPUT_OPTION_REQUIRED = "You must provide at least one option";
+    private static final String INPUT_OPTION_REQUIRED = "You must provide at least one option";
+    private static final String INPUT_POSITIVE_VALUE_REQUIRED = "[%s] must be a positive value";
+    private static final String INPUT_VALID_RANGE = "[%d] must be greater than or equal to [%d]";
 
     private Inputs() {
     }
@@ -92,5 +94,30 @@ public final class Inputs {
             }
         }
         return found;
+    }
+
+    public static int requirePositive(int value, String field) {
+        if (value < 1) {
+            throw new IllegalArgumentException(String.format(INPUT_POSITIVE_VALUE_REQUIRED, field));
+        }
+        return value;
+    }
+
+    public static void requireValidRange(int min, int max) {
+        if (max < min) {
+            throw new IllegalArgumentException(String.format(INPUT_VALID_RANGE, max, min));
+        }
+    }
+
+    public static void requireValidRange(long min, long max) {
+        if (max < min) {
+            throw new IllegalArgumentException(String.format(INPUT_VALID_RANGE, max, min));
+        }
+    }
+
+    public static void requireValidRange(BigDecimal min, BigDecimal max) {
+        if (lessThan(max, min)) {
+            throw new IllegalArgumentException(String.format(INPUT_VALID_RANGE, max, min));
+        }
     }
 }

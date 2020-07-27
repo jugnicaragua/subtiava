@@ -51,8 +51,6 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     public static final String FIELD_MAX_DAY = "[fieldName]: the maximum expected day for this field is %d";
     public static final String FIELD_EQUAL_DAY = "[fieldName]: the expected day for this field is %d";
 
-    public static final String INPUT_POSITIVE_VALUE_REQUIRED = "[%s] must be a positive value";
-
     private final ValidatorBuilder builder;
     private final Supplier<?> fieldSupplier;
     private final String attributeName;
@@ -197,19 +195,13 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     @Override
     public FieldValidator minLength(int value) {
-        if (value <= 0) {
-            throw new IllegalArgumentException(String.format(INPUT_POSITIVE_VALUE_REQUIRED, "minLength"));
-        }
-        minLength = value;
+        minLength = Inputs.requirePositive(value, "minLength");
         return this;
     }
 
     @Override
     public FieldValidator maxLength(int value) {
-        if (value <= 0) {
-            throw new IllegalArgumentException(String.format(INPUT_POSITIVE_VALUE_REQUIRED, "maxLength"));
-        }
-        maxLength = value;
+        maxLength = Inputs.requirePositive(value, "maxLength");
         return this;
     }
 
@@ -279,34 +271,48 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     @Override
     public FieldValidator age(int min, int max) {
-        minAge = min;
-        maxAge = max;
+        Inputs.requireValidRange(min, max);
+        minAge = Inputs.requirePositive(min, "minAge");
+        maxAge = Inputs.requirePositive(max, "maxAge");
         return this;
     }
 
     @Override
     public FieldValidator year(int min, int max) {
-        minYear = min;
-        maxYear = max;
+        Inputs.requireValidRange(min, max);
+        minYear = Inputs.requirePositive(min, "minYear");
+        maxYear = Inputs.requirePositive(max, "maxYear");
         return this;
     }
 
     @Override
     public FieldValidator month(int min, int max) {
-        minMonth = min;
-        maxMonth = max;
+        Inputs.requireValidRange(min, max);
+        minMonth = Inputs.requirePositive(min, "minMonth");
+        maxMonth = Inputs.requirePositive(max, "maxMonth");
         return this;
     }
 
     @Override
     public FieldValidator day(int min, int max) {
-        minDay = min;
-        maxDay = max;
+        Inputs.requireValidRange(min, max);
+        minDay = Inputs.requirePositive(min, "minDay");
+        maxDay = Inputs.requirePositive(max, "maxDay");
         return this;
     }
 
     @Override
     public List<ConstraintViolation> validate() {
+        if (!(min == null || max == null)) {
+            Inputs.requireValidRange(min, max);
+        }
+        if (!(minWithDecimals == null || maxWithDecimals == null)) {
+            Inputs.requireValidRange(minWithDecimals, maxWithDecimals);
+        }
+        if (!(minLength == null || maxLength == null)) {
+            Inputs.requireValidRange(minLength, maxLength);
+        }
+
         List<ConstraintViolation> violations = new LinkedList<>();
 
         violations.addAll(validateNullability());
