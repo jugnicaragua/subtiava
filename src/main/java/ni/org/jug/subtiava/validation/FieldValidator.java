@@ -51,7 +51,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     public static final String FIELD_MAX_DAY = "[fieldName]: the maximum expected day for this field is %d";
     public static final String FIELD_EQUAL_DAY = "[fieldName]: the expected day for this field is %d";
 
-    private final ValidatorBuilder builder;
+    private final Validator validator;
     private final Supplier<?> fieldSupplier;
     private final String attributeName;
 
@@ -86,12 +86,8 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     private int minDay = -1;
     private int maxDay = -1;
 
-    public FieldValidator(ValidatorBuilder builder, Supplier<?> fieldSupplier) {
-        this(builder, fieldSupplier, "attribute");
-    }
-
-    public FieldValidator(ValidatorBuilder builder, Supplier<?> fieldSupplier, String attributeName) {
-        this.builder = Objects.requireNonNull(builder, "[builder] is required");
+    public FieldValidator(Validator validator, Supplier<?> fieldSupplier, String attributeName) {
+        this.validator = Objects.requireNonNull(validator, "[validator] is required");
         this.fieldSupplier = Objects.requireNonNull(fieldSupplier, "[fieldSupplier] is required");
         this.attributeName = Objects.requireNonNull(attributeName, "[attributeName] is required");
     }
@@ -339,21 +335,21 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (notNull) {
             if (fieldValue() == null) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_CANT_BE_NULL));
+                violations.add(createViolation(FIELD_CANT_BE_NULL));
             }
         } else if (alwaysNull) {
             if (fieldValue() != null) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_CANT_BE_NOT_NULL));
+                violations.add(createViolation(FIELD_CANT_BE_NOT_NULL));
             }
         } else if (isString()) {
             String value = valueAsString();
             if (notEmpty) {
                 if (value == null || value.isEmpty()) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_CANT_BE_EMPTY));
+                    violations.add(createViolation(FIELD_CANT_BE_EMPTY));
                 }
             } else if (notBlank) {
                 if (value == null || value.isEmpty() || value.length() == spaceCount(value)) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_CANT_BE_BLANK));
+                    violations.add(createViolation(FIELD_CANT_BE_BLANK));
                 }
             }
         }
@@ -366,37 +362,35 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (isNumber()) {
             if (positive && valueAsLong() < 1) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_POSITIVE_VALUE));
+                violations.add(createViolation(FIELD_MUST_BE_A_POSITIVE_VALUE));
             } else if (negative && valueAsLong() > -1) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_NEGATIVE_VALUE));
+                violations.add(createViolation(FIELD_MUST_BE_A_NEGATIVE_VALUE));
             } else {
                 if (min != null) {
                     if (valueAsLong() < min) {
-                        violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO, min));
+                        violations.add(createViolation(FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO, min));
                     }
                 }
                 if (max != null) {
                     if (valueAsLong() > max) {
-                        violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO, max));
+                        violations.add(createViolation(FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO, max));
                     }
                 }
             }
         } else if (isBigDecimal()) {
             if (positive && valueAsBigDecimal().signum() < 1) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_POSITIVE_VALUE));
+                violations.add(createViolation(FIELD_MUST_BE_A_POSITIVE_VALUE));
             } else if (negative && valueAsBigDecimal().signum() > -1) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_A_NEGATIVE_VALUE));
+                violations.add(createViolation(FIELD_MUST_BE_A_NEGATIVE_VALUE));
             } else {
                 if (minWithDecimals != null) {
                     if (Inputs.lessThan(valueAsBigDecimal(), minWithDecimals)) {
-                        violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO,
-                                minWithDecimals.toPlainString()));
+                        violations.add(createViolation(FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO, minWithDecimals.toPlainString()));
                     }
                 }
                 if (maxWithDecimals != null) {
                     if (Inputs.greaterThan(valueAsBigDecimal(), maxWithDecimals)) {
-                        violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO,
-                                maxWithDecimals.toPlainString()));
+                        violations.add(createViolation(FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO, maxWithDecimals.toPlainString()));
                     }
                 }
             }
@@ -411,12 +405,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         if (isNumber() && longOptions != null) {
             boolean found = Inputs.searchKey(valueAsLong(), longOptions);
             if (!found) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(longOptions)));
+                violations.add(createViolation(FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(longOptions)));
             }
         } else if (isBigDecimal() && bigDecimalOptions != null) {
             boolean found = Inputs.searchKey(Inputs::equals, valueAsBigDecimal(), bigDecimalOptions);
             if (!found) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(bigDecimalOptions)));
+                violations.add(createViolation(FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(bigDecimalOptions)));
             }
         }
 
@@ -429,12 +423,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         if (isString()) {
             if (minLength != null) {
                 if (valueAsString().length() < minLength) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_LENGTH_MIN, minLength));
+                    violations.add(createViolation(FIELD_LENGTH_MIN, minLength));
                 }
             }
             if (maxLength != null) {
                 if (valueAsString().length() > maxLength) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_LENGTH_MAX, maxLength));
+                    violations.add(createViolation(FIELD_LENGTH_MAX, maxLength));
                 }
             }
         }
@@ -448,7 +442,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         if (isString() && stringOptions != null) {
             boolean found = Inputs.searchKey(valueAsString(), stringOptions);
             if (!found) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(stringOptions)));
+                violations.add(createViolation(FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(stringOptions)));
             }
         }
 
@@ -460,7 +454,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (isString() && pattern != null) {
             if (!pattern.matcher(valueAsString()).matches()) {
-                violations.add(ConstraintViolation.of(attributeName, FIELD_PATTERN));
+                violations.add(createViolation(attributeName, FIELD_PATTERN));
             }
         }
 
@@ -474,11 +468,11 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             DateComparator comparator = DateComparator.ofType(fieldClass());
             if (past) {
                 if (!comparator.isBefore(fieldValue())) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_PAST));
+                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_PAST));
                 }
             } else if (pastOrPresent) {
                 if (!comparator.isBeforeOrEqual(fieldValue())) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_PAST_OR_PRESENT));
+                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_PAST_OR_PRESENT));
                 }
             }
         }
@@ -493,11 +487,11 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             DateComparator comparator = DateComparator.ofType(fieldClass());
             if (future) {
                 if (!comparator.isAfter(fieldValue())) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_FUTURE));
+                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_FUTURE));
                 }
             } else if (futureOrPresent) {
                 if (!comparator.isAfterOrEqual(fieldValue())) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_MUST_BE_IN_THE_FUTURE_OR_PRESENT));
+                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_FUTURE_OR_PRESENT));
                 }
             }
         }
@@ -512,17 +506,17 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             DateComparator comparator = DateComparator.ofType(fieldClass());
             if (minAge == maxAge) {
                 if (!comparator.isEqualToAge(fieldValue(), minAge)) {
-                    violations.add(ConstraintViolation.of(attributeName, FIELD_EQUAL_AGE, minAge));
+                    violations.add(createViolation(FIELD_EQUAL_AGE, minAge));
                 }
             } else {
                 if (minAge != -1) {
                     if (!comparator.isGreaterThanOrEqualToAge(fieldValue(), minAge)) {
-                        violations.add(ConstraintViolation.of(attributeName, FIELD_MIN_AGE, minAge));
+                        violations.add(createViolation(FIELD_MIN_AGE, minAge));
                     }
                 }
                 if (maxAge != -1) {
                     if (!comparator.isLessThanOrEqualToAge(fieldValue(), maxAge)) {
-                        violations.add(ConstraintViolation.of(attributeName, FIELD_MAX_AGE, maxAge));
+                        violations.add(createViolation(FIELD_MAX_AGE, maxAge));
                     }
                 }
             }
@@ -554,23 +548,27 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             int dateField = dateFieldSupplier.getAsInt();
             if (min == max) {
                 if (dateField != min) {
-                    violations.add(ConstraintViolation.of(attributeName, messageForEqual, min));
+                    violations.add(createViolation(messageForEqual, min));
                 }
             } else {
                 if (min != -1) {
                     if (dateField < min) {
-                        violations.add(ConstraintViolation.of(attributeName, messageForMin, min));
+                        violations.add(createViolation(messageForMin, min));
                     }
                 }
                 if (max != -1) {
                     if (dateField > max) {
-                        violations.add(ConstraintViolation.of(attributeName, messageForMax, max));
+                        violations.add(createViolation(messageForMax, max));
                     }
                 }
             }
         }
 
         return violations;
+    }
+
+    private ConstraintViolation createViolation(String message, Object... args) {
+        return ConstraintViolation.of(validator.getPojo(), attributeName, message, args);
     }
 
     private Object fieldValue() {
@@ -623,27 +621,47 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     @Override
     public FieldValidator of(Supplier<?> fieldSupplier) {
-        return builder.of(fieldSupplier);
+        return validator.of(fieldSupplier);
+    }
+
+    @Override
+    public FieldValidator of(Supplier<?> fieldSupplier, String attributeName) {
+        return validator.of(fieldSupplier, attributeName);
     }
 
     @Override
     public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier) {
-        return builder.ofString(fieldSupplier);
+        return validator.ofString(fieldSupplier);
+    }
+
+    @Override
+    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier, String attributeName) {
+        return validator.ofString(fieldSupplier, attributeName);
     }
 
     @Override
     public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier) {
-        return builder.ofNumber(fieldSupplier);
+        return validator.ofNumber(fieldSupplier);
+    }
+
+    @Override
+    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier, String attributeName) {
+        return validator.ofNumber(fieldSupplier, attributeName);
     }
 
     @Override
     public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
-        return builder.ofDate(fieldSupplier);
+        return validator.ofDate(fieldSupplier);
+    }
+
+    @Override
+    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName) {
+        return validator.ofDate(fieldSupplier, attributeName);
     }
 
     @Override
     public Validator instance() {
-        return builder.instance();
+        return validator.instance();
     }
 
     private static int spaceCount(CharSequence value) {

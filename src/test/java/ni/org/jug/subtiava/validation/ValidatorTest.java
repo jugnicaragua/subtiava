@@ -3,7 +3,6 @@ package ni.org.jug.subtiava.validation;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Locale;
 
 public class ValidatorTest {
 
@@ -13,15 +12,15 @@ public class ValidatorTest {
         student.gender = "This is a simple test";
         student.status = 15;
 
-        Validator validator = new Validator(Locale.getDefault())
-                .ofNumber(student::getAge)
+        Validator validator = new Validator("student")
+                .ofNumber(student::getAge, "age")
                 .min(12)
                 .max(17)
                 .notNull()
                 .of(student::getClassesCount)
                 .notNull()
                 .positive()
-                .ofString(student::getName)
+                .ofString(student::getName, "name")
                 .notBlank()
                 .minLength(10)
                 .maxLength(100)
@@ -29,7 +28,7 @@ public class ValidatorTest {
                 .ofString(student::getGender)
                 .notNull()
                 .values(Gender.class)
-                .ofNumber(student::getStatus)
+                .ofNumber(student::getStatus, "status")
                 .notNull()
                 .values(10, 20)
                 .instance();

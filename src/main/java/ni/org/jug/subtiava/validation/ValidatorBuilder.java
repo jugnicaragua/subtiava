@@ -9,11 +9,19 @@ import java.util.function.Supplier;
 public interface ValidatorBuilder {
     FieldValidator of(Supplier<?> fieldSupplier);
 
+    FieldValidator of(Supplier<?> fieldSupplier, String attributeName);
+
     <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier);
+
+    <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier, String attributeName);
 
     <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier);
 
+    <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier, String attributeName);
+
     <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier);
+
+    <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName);
 
     Validator instance();
 }

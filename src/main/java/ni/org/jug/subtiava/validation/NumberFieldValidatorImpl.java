@@ -86,8 +86,18 @@ public class NumberFieldValidatorImpl implements NumberFieldValidator {
     }
 
     @Override
+    public FieldValidator of(Supplier<?> fieldSupplier, String attributeName) {
+        return delegate.of(fieldSupplier, attributeName);
+    }
+
+    @Override
     public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier) {
         return delegate.ofString(fieldSupplier);
+    }
+
+    @Override
+    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier, String attributeName) {
+        return delegate.ofString(fieldSupplier, attributeName);
     }
 
     @Override
@@ -96,8 +106,18 @@ public class NumberFieldValidatorImpl implements NumberFieldValidator {
     }
 
     @Override
+    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier, String attributeName) {
+        return delegate.ofNumber(fieldSupplier, attributeName);
+    }
+
+    @Override
     public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
         return delegate.ofDate(fieldSupplier);
+    }
+
+    @Override
+    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName) {
+        return delegate.ofDate(fieldSupplier, attributeName);
     }
 
     @Override
