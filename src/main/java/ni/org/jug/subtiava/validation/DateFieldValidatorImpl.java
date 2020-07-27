@@ -75,8 +75,8 @@ public class DateFieldValidatorImpl implements DateFieldValidator {
     }
 
     @Override
-    public List<ConstraintViolation> validate() {
-        return delegate.validate();
+    public List<ConstraintViolation> check() {
+        return delegate.check();
     }
 
     @Override
@@ -122,5 +122,10 @@ public class DateFieldValidatorImpl implements DateFieldValidator {
     @Override
     public Validator instance() {
         return delegate.instance();
+    }
+
+    @Override
+    public List<ConstraintViolation> validate() {
+        return delegate.validate();
     }
 }

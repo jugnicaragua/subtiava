@@ -1,6 +1,7 @@
 package ni.org.jug.subtiava.validation;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.function.BiPredicate;
 
 /**
@@ -10,7 +11,7 @@ import java.util.function.BiPredicate;
 public final class Inputs {
     private static final String INPUT_OPTION_REQUIRED = "You must provide at least one option";
     private static final String INPUT_POSITIVE_VALUE_REQUIRED = "[%s] must be a positive value";
-    private static final String INPUT_VALID_RANGE = "[%d] must be greater than or equal to [%d]";
+    private static final String INPUT_VALID_RANGE = "max ({0}) must be greater than or equal to min ({1})";
 
     private Inputs() {
     }
@@ -105,19 +106,19 @@ public final class Inputs {
 
     public static void requireValidRange(int min, int max) {
         if (max < min) {
-            throw new IllegalArgumentException(String.format(INPUT_VALID_RANGE, max, min));
+            throw new IllegalArgumentException(MessageFormat.format(INPUT_VALID_RANGE, max, min));
         }
     }
 
     public static void requireValidRange(long min, long max) {
         if (max < min) {
-            throw new IllegalArgumentException(String.format(INPUT_VALID_RANGE, max, min));
+            throw new IllegalArgumentException(MessageFormat.format(INPUT_VALID_RANGE, max, min));
         }
     }
 
     public static void requireValidRange(BigDecimal min, BigDecimal max) {
         if (lessThan(max, min)) {
-            throw new IllegalArgumentException(String.format(INPUT_VALID_RANGE, max, min));
+            throw new IllegalArgumentException(MessageFormat.format(INPUT_VALID_RANGE, max, min));
         }
     }
 }

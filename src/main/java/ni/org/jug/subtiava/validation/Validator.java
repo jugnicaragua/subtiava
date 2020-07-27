@@ -73,17 +73,18 @@ public class Validator implements ValidatorBuilder {
         return this;
     }
 
+    @Override
+    public List<ConstraintViolation> validate() {
+        List<ConstraintViolation> violations = new LinkedList<>();
+        for (FieldValidator fieldValidator : validators) {
+            violations.addAll(fieldValidator.check());
+        }
+        return Collections.unmodifiableList(violations);
+    }
+
     private FieldValidator addValidator(Supplier<?> fieldSupplier, String attributeName) {
         FieldValidator fieldValidator = new FieldValidator(this, fieldSupplier, attributeName);
         validators.add(fieldValidator);
         return fieldValidator;
-    }
-
-    public List<ConstraintViolation> validate() {
-        List<ConstraintViolation> violations = new LinkedList<>();
-        for (FieldValidator fieldValidator : validators) {
-            violations.addAll(fieldValidator.validate());
-        }
-        return Collections.unmodifiableList(violations);
     }
 }

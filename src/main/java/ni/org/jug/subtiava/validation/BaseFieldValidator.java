@@ -11,5 +11,5 @@ public interface BaseFieldValidator<T extends BaseFieldValidator> extends Valida
 
     T alwaysNull();
 
-    List<ConstraintViolation> validate();
+    List<ConstraintViolation> check();
 }

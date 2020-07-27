@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
@@ -298,22 +299,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     }
 
     @Override
-    public List<ConstraintViolation> validate() {
-        if (!(min == null || max == null)) {
-            Inputs.requireValidRange(min, max);
-        }
-        if (!(minWithDecimals == null || maxWithDecimals == null)) {
-            Inputs.requireValidRange(minWithDecimals, maxWithDecimals);
-        }
-        if (!(minLength == null || maxLength == null)) {
-            Inputs.requireValidRange(minLength, maxLength);
-        }
+    public List<ConstraintViolation> check() {
+        checkState();
 
         List<ConstraintViolation> violations = new LinkedList<>();
-
         violations.addAll(validateNullability());
-
-        if (fieldValue() != null) {
+        if (fieldValue() != null && !alwaysNull) {
             violations.addAll(validateMinAndMax());
             violations.addAll(validateNumericOptions());
             violations.addAll(validateStringLength());
@@ -326,8 +317,19 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             violations.addAll(validateMonth());
             violations.addAll(validateDay());
         }
+        return Collections.unmodifiableList(violations);
+    }
 
-        return violations;
+    private void checkState() {
+        if (!(min == null || max == null)) {
+            Inputs.requireValidRange(min, max);
+        }
+        if (!(minWithDecimals == null || maxWithDecimals == null)) {
+            Inputs.requireValidRange(minWithDecimals, maxWithDecimals);
+        }
+        if (!(minLength == null || maxLength == null)) {
+            Inputs.requireValidRange(minLength, maxLength);
+        }
     }
 
     private List<ConstraintViolation> validateNullability() {
@@ -662,6 +664,11 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     @Override
     public Validator instance() {
         return validator.instance();
+    }
+
+    @Override
+    public List<ConstraintViolation> validate() {
+        return validator.validate();
     }
 
     private static int spaceCount(CharSequence value) {

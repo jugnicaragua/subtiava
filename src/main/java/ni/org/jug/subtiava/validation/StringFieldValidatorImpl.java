@@ -1,6 +1,5 @@
 package ni.org.jug.subtiava.validation;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -65,8 +64,8 @@ public class StringFieldValidatorImpl implements StringFieldValidator {
     }
 
     @Override
-    public List<ConstraintViolation> validate() {
-        return Collections.unmodifiableList(delegate.validate());
+    public List<ConstraintViolation> check() {
+        return delegate.check();
     }
 
     @Override
@@ -112,5 +111,10 @@ public class StringFieldValidatorImpl implements StringFieldValidator {
     @Override
     public Validator instance() {
         return delegate.instance();
+    }
+
+    @Override
+    public List<ConstraintViolation> validate() {
+        return delegate.validate();
     }
 }

@@ -1,5 +1,6 @@
 package ni.org.jug.subtiava.validation;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -24,4 +25,6 @@ public interface ValidatorBuilder {
     <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName);
 
     Validator instance();
+
+    List<ConstraintViolation> validate();
 }
