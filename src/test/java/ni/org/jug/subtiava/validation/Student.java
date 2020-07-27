@@ -1,5 +1,6 @@
 package ni.org.jug.subtiava.validation;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -15,6 +16,7 @@ public class Student {
     public String gender;
     public Integer status;
     public LocalDate dateOfBirth;
+    public BigDecimal payment;
 
     public Student() {
     }
@@ -60,5 +62,9 @@ public class Student {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public BigDecimal getPayment() {
+        return payment;
     }
 }
