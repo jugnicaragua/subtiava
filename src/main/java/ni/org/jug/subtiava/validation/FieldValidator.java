@@ -454,7 +454,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (isString() && pattern != null) {
             if (!pattern.matcher(valueAsString()).matches()) {
-                violations.add(createViolation(attributeName, FIELD_PATTERN));
+                violations.add(createViolation(FIELD_PATTERN));
             }
         }
 
@@ -568,7 +568,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     }
 
     private ConstraintViolation createViolation(String message, Object... args) {
-        return ConstraintViolation.of(validator.getPojo(), attributeName, message, args);
+        return ConstraintViolation.of(validator.getPojo(), attributeName, fieldValue(), message, args);
     }
 
     private Object fieldValue() {

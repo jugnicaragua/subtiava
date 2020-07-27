@@ -11,20 +11,21 @@ public final class ConstraintViolation {
 
     public final String pojo;
     public final String field;
+    public final Object fieldValue;
     public final String message;
-    // TODO Agregar el valor del atributo y pintarlo en el toString
 
-    public ConstraintViolation(String pojo, String field, String message) {
+    public ConstraintViolation(String pojo, String field, Object fieldValue, String message) {
         this.pojo = pojo;
         this.field = field;
+        this.fieldValue = fieldValue;
         this.message = Objects.requireNonNull(message, "[message] is required");
     }
 
-    public static ConstraintViolation of(String pojo, String field, String message, Object... args) {
-        return new ConstraintViolation(pojo, field, resolveMessage(pojo, field, message, args));
+    public static ConstraintViolation of(String pojo, String field, Object fieldValue, String message, Object... args) {
+        return new ConstraintViolation(pojo, field, fieldValue, resolveMessage(pojo, field, fieldValue, message, args));
     }
 
-    private static String resolveMessage(String pojo, String field, String message, Object[] args) {
+    private static String resolveMessage(String pojo, String field, Object fieldValue, String message, Object[] args) {
         if (message.contains(FIELD_TOKEN)) {
             message = message.replace(FIELD_TOKEN, '[' + field + ']');
         }
@@ -36,6 +37,7 @@ public final class ConstraintViolation {
         return "ConstraintViolation{" +
                 "pojo='" + pojo + '\'' +
                 ", field='" + field + '\'' +
+                ", fieldValue=<" + fieldValue + ">" +
                 ", message='" + message + '\'' +
                 '}';
     }
