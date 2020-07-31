@@ -16,6 +16,7 @@ public class Student {
     public String gender;
     public Integer status;
     public LocalDate dateOfBirth;
+    public LocalDate inscriptionDate;
     public BigDecimal payment;
 
     public Student() {
@@ -62,6 +63,10 @@ public class Student {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public LocalDate getInscriptionDate() {
+        return inscriptionDate;
     }
 
     public BigDecimal getPayment() {

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,8 +83,8 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     private int maxAge = -1;
     private int minYear = -1;
     private int maxYear = -1;
-    private int minMonth = -1;
-    private int maxMonth = -1;
+    private Month minMonth;
+    private Month maxMonth;
     private int minDay = -1;
     private int maxDay = -1;
 
@@ -283,10 +284,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     }
 
     @Override
-    public FieldValidator month(int min, int max) {
-        Inputs.requireValidRange(min, max);
-        minMonth = Inputs.requirePositive(min, "minMonth");
-        maxMonth = Inputs.requirePositive(max, "maxMonth");
+    public FieldValidator month(Month min, Month max) {
+        Objects.requireNonNull(min, "[minMonth] is required");
+        Objects.requireNonNull(max, "[maxMonth] is required");
+        Inputs.requireValidRange(min.getValue(), max.getValue());
+        minMonth = min;
+        maxMonth = max;
         return this;
     }
 
@@ -534,7 +537,9 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     private List<ConstraintViolation> validateMonth() {
         IntSupplier monthSupplier = () -> DateComparator.ofType(fieldClass()).getMonth(fieldValue());
-        return validateDateField(monthSupplier, minMonth, maxMonth, FIELD_MIN_MONTH, FIELD_MAX_MONTH, FIELD_EQUAL_MONTH);
+        int min = minMonth == null ? -1 : minMonth.getValue();
+        int max = maxMonth == null ? -1 : maxMonth.getValue();
+        return validateDateField(monthSupplier, min, max, FIELD_MIN_MONTH, FIELD_MAX_MONTH, FIELD_EQUAL_MONTH);
     }
 
     private List<ConstraintViolation> validateDay() {

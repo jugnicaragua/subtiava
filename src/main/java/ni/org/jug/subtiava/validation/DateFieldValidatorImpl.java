@@ -1,5 +1,6 @@
 package ni.org.jug.subtiava.validation;
 
+import java.time.Month;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -63,7 +64,7 @@ public class DateFieldValidatorImpl implements DateFieldValidator {
     }
 
     @Override
-    public DateFieldValidator month(int min, int max) {
+    public DateFieldValidator month(Month min, Month max) {
         delegate.month(min, max);
         return this;
     }

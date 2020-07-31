@@ -32,6 +32,22 @@ public final class ConstraintViolation {
         return String.format(message, args);
     }
 
+    public String getPojo() {
+        return pojo;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public Object getFieldValue() {
+        return fieldValue;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public String toString() {
         return "ConstraintViolation{" +

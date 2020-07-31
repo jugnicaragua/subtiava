@@ -33,19 +33,19 @@ public interface DateFieldValidator<T extends DateFieldValidator> extends BaseFi
         return year(value, value);
     }
 
-    T month(int min, int max);
+    default T month(int min, int max) {
+        return month(Month.of(min), Month.of(max));
+    }
 
     default T month(int value) {
         return month(value, value);
     }
 
     default T month(Month value) {
-        return month(value.getValue());
+        return month(value, value);
     }
 
-    default T month(Month min, Month max) {
-        return month(min.getValue(), max.getValue());
-    }
+    T month(Month min, Month max);
 
     T day(int min, int max);
 
