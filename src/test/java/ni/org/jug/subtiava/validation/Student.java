@@ -2,6 +2,8 @@ package ni.org.jug.subtiava.validation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author aalaniz
@@ -18,6 +20,8 @@ public class Student {
     public LocalDate dateOfBirth;
     public LocalDate inscriptionDate;
     public BigDecimal payment;
+    public LocalDateTime createdOn;
+    public LocalDateTime updatedOn;
 
     public Student() {
     }
@@ -71,5 +75,64 @@ public class Student {
 
     public BigDecimal getPayment() {
         return payment;
+    }
+
+    public LocalDateTime getCreatedOn() {
+        return createdOn;
+    }
+
+    public LocalDateTime getUpdatedOn() {
+        return updatedOn;
+    }
+
+    public List<ConstraintViolation> validateBeforeInsert() {
+        return new Validator("student")
+                .ofString(this::getFirstName, "first name")
+                .notBlank()
+                .minLength(3)
+                .maxLength(50)
+                .ofString(this::getLastName, "last name")
+                .notBlank()
+                .minLength(3)
+                .maxLength(50)
+                .ofString(this::getGender, "gender")
+                .notNull()
+                .values(Gender.class)
+                .ofNumber(this::getAge, "age")
+                .notNull()
+                .min(0)
+                .max(150)
+                .ofDate(this::getCreatedOn, "created on")
+                .notNull()
+                .pastOrPresent()
+                .ofDate(this::getUpdatedOn, "updated on")
+                .alwaysNull()
+                .validate();
+    }
+
+    public List<ConstraintViolation> validateBeforeUpdate() {
+        return new Validator("student")
+                .ofString(this::getFirstName, "first name")
+                .notBlank()
+                .minLength(3)
+                .maxLength(50)
+                .ofString(this::getLastName, "last name")
+                .notBlank()
+                .minLength(3)
+                .maxLength(50)
+                .ofString(this::getGender, "gender")
+                .notNull()
+                .values(Gender.class)
+                .ofNumber(this::getAge, "age")
+                .notNull()
+                .min(0)
+                .max(150)
+                .ofDate(this::getCreatedOn, "created on")
+                .notNull()
+                .pastOrPresent()
+                .ofDate(this::getUpdatedOn, "updated on")
+                .notNull()
+                .pastOrPresent()
+                .validate();
     }
 }

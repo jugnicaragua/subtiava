@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -476,5 +477,16 @@ public class ValidatorTest {
                     .year(2020, 1991)
                     .validate();
         });
+    }
+
+    @Test
+    void validate_ValidationAppliedAtPojoLevel_PojoWithoutDataIssues() {
+        Student student = new Student("Duke", "Nicaragua", 25, Gender.MALE);
+        student.createdOn = LocalDateTime.now();
+
+        assertEquals(0, student.validateBeforeInsert().size());
+
+        student.updatedOn = LocalDateTime.now();
+        assertEquals(0, student.validateBeforeUpdate().size());
     }
 }
