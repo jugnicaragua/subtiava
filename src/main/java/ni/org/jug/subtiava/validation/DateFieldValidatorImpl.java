@@ -91,33 +91,33 @@ public class DateFieldValidatorImpl implements DateFieldValidator {
     }
 
     @Override
-    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier) {
-        return delegate.ofString(fieldSupplier);
+    public <T extends String> StringFieldValidator stringField(Supplier<T> fieldSupplier) {
+        return delegate.stringField(fieldSupplier);
     }
 
     @Override
-    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier, String attributeName) {
-        return delegate.ofString(fieldSupplier, attributeName);
+    public <T extends String> StringFieldValidator stringField(Supplier<T> fieldSupplier, String attributeName) {
+        return delegate.stringField(fieldSupplier, attributeName);
     }
 
     @Override
-    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier) {
-        return delegate.ofNumber(fieldSupplier);
+    public <T extends Number> NumberFieldValidator numberField(Supplier<T> fieldSupplier) {
+        return delegate.numberField(fieldSupplier);
     }
 
     @Override
-    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier, String attributeName) {
-        return delegate.ofNumber(fieldSupplier, attributeName);
+    public <T extends Number> NumberFieldValidator numberField(Supplier<T> fieldSupplier, String attributeName) {
+        return delegate.numberField(fieldSupplier, attributeName);
     }
 
     @Override
-    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
-        return delegate.ofDate(fieldSupplier);
+    public <T> DateFieldValidator dateField(Supplier<T> fieldSupplier) {
+        return delegate.dateField(fieldSupplier);
     }
 
     @Override
-    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName) {
-        return delegate.ofDate(fieldSupplier, attributeName);
+    public <T> DateFieldValidator dateField(Supplier<T> fieldSupplier, String attributeName) {
+        return delegate.dateField(fieldSupplier, attributeName);
     }
 
     @Override

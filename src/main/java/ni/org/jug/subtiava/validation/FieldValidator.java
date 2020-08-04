@@ -637,33 +637,33 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     }
 
     @Override
-    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier) {
-        return validator.ofString(fieldSupplier);
+    public <T extends String> StringFieldValidator stringField(Supplier<T> fieldSupplier) {
+        return validator.stringField(fieldSupplier);
     }
 
     @Override
-    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier, String attributeName) {
-        return validator.ofString(fieldSupplier, attributeName);
+    public <T extends String> StringFieldValidator stringField(Supplier<T> fieldSupplier, String attributeName) {
+        return validator.stringField(fieldSupplier, attributeName);
     }
 
     @Override
-    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier) {
-        return validator.ofNumber(fieldSupplier);
+    public <T extends Number> NumberFieldValidator numberField(Supplier<T> fieldSupplier) {
+        return validator.numberField(fieldSupplier);
     }
 
     @Override
-    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier, String attributeName) {
-        return validator.ofNumber(fieldSupplier, attributeName);
+    public <T extends Number> NumberFieldValidator numberField(Supplier<T> fieldSupplier, String attributeName) {
+        return validator.numberField(fieldSupplier, attributeName);
     }
 
     @Override
-    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
-        return validator.ofDate(fieldSupplier);
+    public <T> DateFieldValidator dateField(Supplier<T> fieldSupplier) {
+        return validator.dateField(fieldSupplier);
     }
 
     @Override
-    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName) {
-        return validator.ofDate(fieldSupplier, attributeName);
+    public <T> DateFieldValidator dateField(Supplier<T> fieldSupplier, String attributeName) {
+        return validator.dateField(fieldSupplier, attributeName);
     }
 
     @Override

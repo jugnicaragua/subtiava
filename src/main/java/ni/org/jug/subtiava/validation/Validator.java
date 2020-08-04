@@ -39,32 +39,32 @@ public class Validator implements ValidatorBuilder {
     }
 
     @Override
-    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier) {
-        return ofString(fieldSupplier, FIELD_DEFAULT_NAME);
+    public <T extends String> StringFieldValidator stringField(Supplier<T> fieldSupplier) {
+        return stringField(fieldSupplier, FIELD_DEFAULT_NAME);
     }
 
     @Override
-    public <T extends String> StringFieldValidator ofString(Supplier<T> fieldSupplier, String attributeName) {
+    public <T extends String> StringFieldValidator stringField(Supplier<T> fieldSupplier, String attributeName) {
         return new StringFieldValidatorImpl(addValidator(fieldSupplier, attributeName));
     }
 
     @Override
-    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier) {
-        return ofNumber(fieldSupplier, FIELD_DEFAULT_NAME);
+    public <T extends Number> NumberFieldValidator numberField(Supplier<T> fieldSupplier) {
+        return numberField(fieldSupplier, FIELD_DEFAULT_NAME);
     }
 
     @Override
-    public <T extends Number> NumberFieldValidator ofNumber(Supplier<T> fieldSupplier, String attributeName) {
+    public <T extends Number> NumberFieldValidator numberField(Supplier<T> fieldSupplier, String attributeName) {
         return new NumberFieldValidatorImpl(addValidator(fieldSupplier, attributeName));
     }
 
     @Override
-    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier) {
-        return ofDate(fieldSupplier, FIELD_DEFAULT_NAME);
+    public <T> DateFieldValidator dateField(Supplier<T> fieldSupplier) {
+        return dateField(fieldSupplier, FIELD_DEFAULT_NAME);
     }
 
     @Override
-    public <T> DateFieldValidator ofDate(Supplier<T> fieldSupplier, String attributeName) {
+    public <T> DateFieldValidator dateField(Supplier<T> fieldSupplier, String attributeName) {
         return new DateFieldValidatorImpl(addValidator(fieldSupplier, attributeName));
     }
 
