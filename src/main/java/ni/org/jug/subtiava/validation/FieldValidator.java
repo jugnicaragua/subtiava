@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -24,38 +23,10 @@ import java.util.regex.Pattern;
  */
 public class FieldValidator implements NumberFieldValidator<FieldValidator>, StringFieldValidator<FieldValidator>,
         DateFieldValidator<FieldValidator> {
-    public static final String FIELD_CANT_BE_NULL = "[fieldName] can't be null";
-    public static final String FIELD_CANT_BE_NOT_NULL = "[fieldName] can't be a not null value";
-    public static final String FIELD_CANT_BE_EMPTY = "[fieldName] can't be empty";
-    public static final String FIELD_CANT_BE_BLANK = "[fieldName] can't be blank";
-    public static final String FIELD_LENGTH_MIN = "[fieldName] length must be greater than or equal to %d characters";
-    public static final String FIELD_LENGTH_MAX = "[fieldName] length must be less than or equal to %d characters";
-    public static final String FIELD_PATTERN = "[fieldName] doesn't match the expected pattern";
-    public static final String FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO = "[fieldName] must be greater than or equal to %s";
-    public static final String FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO = "[fieldName] must be less than or equal to %s";
-    public static final String FIELD_MUST_BE_WITHIN_OPTIONS = "[fieldName] must be one of the following values %s";
-    public static final String FIELD_MUST_BE_A_POSITIVE_VALUE = "[fieldName] must be a positive value";
-    public static final String FIELD_MUST_BE_A_NEGATIVE_VALUE = "[fieldName] must be a negative value";
-    public static final String FIELD_MUST_BE_IN_THE_PAST = "[fieldName] must be in the past";
-    public static final String FIELD_MUST_BE_IN_THE_PAST_OR_PRESENT = "[fieldName] must be in the past or present";
-    public static final String FIELD_MUST_BE_IN_THE_FUTURE = "[fieldName] must be in the future";
-    public static final String FIELD_MUST_BE_IN_THE_FUTURE_OR_PRESENT = "[fieldName] must be in the future or present";
-    public static final String FIELD_MIN_AGE = "[fieldName]: the minimum expected age for this field is %d years";
-    public static final String FIELD_MAX_AGE = "[fieldName]: the maximum expected age for this field is %d years";
-    public static final String FIELD_EQUAL_AGE = "[fieldName]: the expected age for this field is %d years";
-    public static final String FIELD_MIN_YEAR = "[fieldName]: the minimum expected year for this field is %d";
-    public static final String FIELD_MAX_YEAR = "[fieldName]: the maximum expected year for this field is %d";
-    public static final String FIELD_EQUAL_YEAR = "[fieldName]: the expected year for this field is %d";
-    public static final String FIELD_MIN_MONTH = "[fieldName]: the minimum expected month for this field is %d";
-    public static final String FIELD_MAX_MONTH = "[fieldName]: the maximum expected month for this field is %d";
-    public static final String FIELD_EQUAL_MONTH = "[fieldName]: the expected month for this field is %d";
-    public static final String FIELD_MIN_DAY = "[fieldName]: the minimum expected day for this field is %d";
-    public static final String FIELD_MAX_DAY = "[fieldName]: the maximum expected day for this field is %d";
-    public static final String FIELD_EQUAL_DAY = "[fieldName]: the expected day for this field is %d";
-
     private final Validator validator;
     private final Supplier<?> fieldSupplier;
-    private final String attributeName;
+    private final ConstraintCoordinate coordinate;
+    private final ValidatorMessage message;
 
     private boolean notNull;
     private boolean alwaysNull;
@@ -91,7 +62,9 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
     public FieldValidator(Validator validator, Supplier<?> fieldSupplier, String attributeName) {
         this.validator = Objects.requireNonNull(validator, "[validator] is required");
         this.fieldSupplier = Objects.requireNonNull(fieldSupplier, "[fieldSupplier] is required");
-        this.attributeName = Objects.requireNonNull(attributeName, "[attributeName] is required");
+        Objects.requireNonNull(attributeName, "[attributeName] is required");
+        this.coordinate = new ConstraintCoordinate(validator.getPojo(), attributeName);
+        this.message = new ValidatorMessage(this.coordinate, this.validator.getLocale());
     }
 
     @Override
@@ -303,7 +276,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     @Override
     public List<ConstraintViolation> check() {
-        checkState();
+        checkConstraints();
 
         List<ConstraintViolation> violations = new LinkedList<>();
         violations.addAll(validateNullability());
@@ -323,7 +296,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         return Collections.unmodifiableList(violations);
     }
 
-    private void checkState() {
+    private void checkConstraints() {
         if (!(min == null || max == null)) {
             Inputs.requireValidRange(min, max);
         }
@@ -340,21 +313,21 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (notNull) {
             if (fieldValue() == null) {
-                violations.add(createViolation(FIELD_CANT_BE_NULL));
+                violations.add(createViolation(message.fieldNotNull()));
             }
         } else if (alwaysNull) {
             if (fieldValue() != null) {
-                violations.add(createViolation(FIELD_CANT_BE_NOT_NULL));
+                violations.add(createViolation(message.fieldAlwaysNull()));
             }
         } else if (isString()) {
             String value = valueAsString();
             if (notEmpty) {
                 if (value == null || value.isEmpty()) {
-                    violations.add(createViolation(FIELD_CANT_BE_EMPTY));
+                    violations.add(createViolation(message.fieldNotEmpty()));
                 }
             } else if (notBlank) {
                 if (value == null || value.isEmpty() || value.length() == spaceCount(value)) {
-                    violations.add(createViolation(FIELD_CANT_BE_BLANK));
+                    violations.add(createViolation(message.fieldNotBlank()));
                 }
             }
         }
@@ -367,35 +340,35 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (isNumber()) {
             if (positive && valueAsLong() < 1) {
-                violations.add(createViolation(FIELD_MUST_BE_A_POSITIVE_VALUE));
+                violations.add(createViolation(message.fieldPositiveValue()));
             } else if (negative && valueAsLong() > -1) {
-                violations.add(createViolation(FIELD_MUST_BE_A_NEGATIVE_VALUE));
+                violations.add(createViolation(message.fieldNegativeValue()));
             } else {
                 if (min != null) {
                     if (valueAsLong() < min) {
-                        violations.add(createViolation(FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO, min));
+                        violations.add(createViolation(message.fieldGreaterThanOrEqual(min)));
                     }
                 }
                 if (max != null) {
                     if (valueAsLong() > max) {
-                        violations.add(createViolation(FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO, max));
+                        violations.add(createViolation(message.fieldLessThanOrEqual(max)));
                     }
                 }
             }
         } else if (isBigDecimal()) {
             if (positive && valueAsBigDecimal().signum() < 1) {
-                violations.add(createViolation(FIELD_MUST_BE_A_POSITIVE_VALUE));
+                violations.add(createViolation(message.fieldPositiveValue()));
             } else if (negative && valueAsBigDecimal().signum() > -1) {
-                violations.add(createViolation(FIELD_MUST_BE_A_NEGATIVE_VALUE));
+                violations.add(createViolation(message.fieldNegativeValue()));
             } else {
                 if (minWithDecimals != null) {
                     if (Inputs.lessThan(valueAsBigDecimal(), minWithDecimals)) {
-                        violations.add(createViolation(FIELD_MUST_BE_GREATER_THAN_OR_EQUAL_TO, minWithDecimals.toPlainString()));
+                        violations.add(createViolation(message.fieldGreaterThanOrEqual(minWithDecimals)));
                     }
                 }
                 if (maxWithDecimals != null) {
                     if (Inputs.greaterThan(valueAsBigDecimal(), maxWithDecimals)) {
-                        violations.add(createViolation(FIELD_MUST_BE_LESS_THAN_OR_EQUAL_TO, maxWithDecimals.toPlainString()));
+                        violations.add(createViolation(message.fieldLessThanOrEqual(maxWithDecimals)));
                     }
                 }
             }
@@ -410,12 +383,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         if (isNumber() && longOptions != null) {
             boolean found = Inputs.searchKey(valueAsLong(), longOptions);
             if (!found) {
-                violations.add(createViolation(FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(longOptions)));
+                violations.add(createViolation(message.fieldWithinOptions(longOptions)));
             }
         } else if (isBigDecimal() && bigDecimalOptions != null) {
             boolean found = Inputs.searchKey(Inputs::equals, valueAsBigDecimal(), bigDecimalOptions);
             if (!found) {
-                violations.add(createViolation(FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(bigDecimalOptions)));
+                violations.add(createViolation(message.fieldWithinOptions(bigDecimalOptions)));
             }
         }
 
@@ -428,12 +401,12 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         if (isString()) {
             if (minLength != null) {
                 if (valueAsString().length() < minLength) {
-                    violations.add(createViolation(FIELD_LENGTH_MIN, minLength));
+                    violations.add(createViolation(message.fieldMinLength(minLength)));
                 }
             }
             if (maxLength != null) {
                 if (valueAsString().length() > maxLength) {
-                    violations.add(createViolation(FIELD_LENGTH_MAX, maxLength));
+                    violations.add(createViolation(message.fieldMaxLength(maxLength)));
                 }
             }
         }
@@ -447,7 +420,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         if (isString() && stringOptions != null) {
             boolean found = Inputs.searchKey(valueAsString(), stringOptions);
             if (!found) {
-                violations.add(createViolation(FIELD_MUST_BE_WITHIN_OPTIONS, Arrays.toString(stringOptions)));
+                violations.add(createViolation(message.fieldWithinOptions(stringOptions)));
             }
         }
 
@@ -459,7 +432,7 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
         if (isString() && pattern != null) {
             if (!pattern.matcher(valueAsString()).matches()) {
-                violations.add(createViolation(FIELD_PATTERN));
+                violations.add(createViolation(message.fieldPattern()));
             }
         }
 
@@ -473,11 +446,11 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             DateComparator comparator = DateComparator.ofType(fieldClass());
             if (past) {
                 if (!comparator.isBefore(fieldValue())) {
-                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_PAST));
+                    violations.add(createViolation(message.fieldInThePast()));
                 }
             } else if (pastOrPresent) {
                 if (!comparator.isBeforeOrEqual(fieldValue())) {
-                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_PAST_OR_PRESENT));
+                    violations.add(createViolation(message.fieldInThePastOrPresent()));
                 }
             }
         }
@@ -492,11 +465,11 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             DateComparator comparator = DateComparator.ofType(fieldClass());
             if (future) {
                 if (!comparator.isAfter(fieldValue())) {
-                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_FUTURE));
+                    violations.add(createViolation(message.fieldInTheFuture()));
                 }
             } else if (futureOrPresent) {
                 if (!comparator.isAfterOrEqual(fieldValue())) {
-                    violations.add(createViolation(FIELD_MUST_BE_IN_THE_FUTURE_OR_PRESENT));
+                    violations.add(createViolation(message.fieldInTheFutureOrPresent()));
                 }
             }
         }
@@ -511,17 +484,17 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             DateComparator comparator = DateComparator.ofType(fieldClass());
             if (minAge == maxAge) {
                 if (!comparator.isEqualToAge(fieldValue(), minAge)) {
-                    violations.add(createViolation(FIELD_EQUAL_AGE, minAge));
+                    violations.add(createViolation(message.fieldEqualAge(minAge)));
                 }
             } else {
                 if (minAge != -1) {
                     if (!comparator.isGreaterThanOrEqualToAge(fieldValue(), minAge)) {
-                        violations.add(createViolation(FIELD_MIN_AGE, minAge));
+                        violations.add(createViolation(message.fieldMinAge(minAge)));
                     }
                 }
                 if (maxAge != -1) {
                     if (!comparator.isLessThanOrEqualToAge(fieldValue(), maxAge)) {
-                        violations.add(createViolation(FIELD_MAX_AGE, maxAge));
+                        violations.add(createViolation(message.fieldMaxAge(maxAge)));
                     }
                 }
             }
@@ -532,19 +505,22 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
 
     private List<ConstraintViolation> validateYear() {
         IntSupplier yearSupplier = () -> DateComparator.ofType(fieldClass()).getYear(fieldValue());
-        return validateDateField(yearSupplier, minYear, maxYear, FIELD_MIN_YEAR, FIELD_MAX_YEAR, FIELD_EQUAL_YEAR);
+        return validateDateField(yearSupplier, minYear, maxYear, message.fieldMinYear(minYear), message.fieldMaxYear(maxYear),
+                message.fieldEqualYear(minYear));
     }
 
     private List<ConstraintViolation> validateMonth() {
         IntSupplier monthSupplier = () -> DateComparator.ofType(fieldClass()).getMonth(fieldValue());
         int min = minMonth == null ? -1 : minMonth.getValue();
         int max = maxMonth == null ? -1 : maxMonth.getValue();
-        return validateDateField(monthSupplier, min, max, FIELD_MIN_MONTH, FIELD_MAX_MONTH, FIELD_EQUAL_MONTH);
+        return validateDateField(monthSupplier, min, max, message.fieldMinMonth(min), message.fieldMaxMonth(max),
+                message.fieldEqualMonth(min));
     }
 
     private List<ConstraintViolation> validateDay() {
         IntSupplier daySupplier = () -> DateComparator.ofType(fieldClass()).getDay(fieldValue());
-        return validateDateField(daySupplier, minDay, maxDay, FIELD_MIN_DAY, FIELD_MAX_DAY, FIELD_EQUAL_DAY);
+        return validateDateField(daySupplier, minDay, maxDay, message.fieldMinDay(minDay), message.fieldMaxDay(maxDay),
+                message.fieldEqualDay(minDay));
     }
 
     private List<ConstraintViolation> validateDateField(IntSupplier dateFieldSupplier, int min, int max, String messageForMin,
@@ -555,17 +531,17 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
             int dateField = dateFieldSupplier.getAsInt();
             if (min == max) {
                 if (dateField != min) {
-                    violations.add(createViolation(messageForEqual, min));
+                    violations.add(createViolation(messageForEqual));
                 }
             } else {
                 if (min != -1) {
                     if (dateField < min) {
-                        violations.add(createViolation(messageForMin, min));
+                        violations.add(createViolation(messageForMin));
                     }
                 }
                 if (max != -1) {
                     if (dateField > max) {
-                        violations.add(createViolation(messageForMax, max));
+                        violations.add(createViolation(messageForMax));
                     }
                 }
             }
@@ -574,8 +550,8 @@ public class FieldValidator implements NumberFieldValidator<FieldValidator>, Str
         return violations;
     }
 
-    private ConstraintViolation createViolation(String message, Object... args) {
-        return ConstraintViolation.of(validator.getPojo(), attributeName, fieldValue(), message, args);
+    private ConstraintViolation createViolation(String message) {
+        return new ConstraintViolation(coordinate, fieldValue(), message);
     }
 
     private Object fieldValue() {

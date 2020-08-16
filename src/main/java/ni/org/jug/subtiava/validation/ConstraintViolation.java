@@ -7,8 +7,6 @@ import java.util.Objects;
  * @version 1.0
  */
 public final class ConstraintViolation {
-    private static final String FIELD_TOKEN = "[fieldName]";
-
     public final String pojo;
     public final String field;
     public final Object fieldValue;
@@ -21,15 +19,8 @@ public final class ConstraintViolation {
         this.message = Objects.requireNonNull(message, "[message] is required");
     }
 
-    public static ConstraintViolation of(String pojo, String field, Object fieldValue, String message, Object... args) {
-        return new ConstraintViolation(pojo, field, fieldValue, resolveMessage(pojo, field, fieldValue, message, args));
-    }
-
-    private static String resolveMessage(String pojo, String field, Object fieldValue, String message, Object[] args) {
-        if (message.contains(FIELD_TOKEN)) {
-            message = message.replace(FIELD_TOKEN, '[' + field + ']');
-        }
-        return String.format(message, args);
+    public ConstraintViolation(ConstraintCoordinate coordinate, Object fieldValue, String message) {
+        this(Objects.requireNonNull(coordinate, "[coordinate] is required").pojo, coordinate.field, fieldValue, message);
     }
 
     public String getPojo() {

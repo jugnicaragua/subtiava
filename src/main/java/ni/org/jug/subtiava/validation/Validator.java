@@ -3,6 +3,7 @@ package ni.org.jug.subtiava.validation;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -15,17 +16,36 @@ public class Validator implements ValidatorBuilder {
 
     private final List<FieldValidator> validators = new LinkedList<>();
     private final String pojo;
+    private final Locale locale;
 
     public Validator() {
         this.pojo = null;
+        this.locale = Locale.getDefault();
     }
 
     public Validator(String pojo) {
+        this(pojo, Locale.getDefault());
+    }
+
+    public Validator(String pojo, Locale locale) {
         this.pojo = Objects.requireNonNull(pojo, "[pojo] is required");
+        this.locale = Objects.requireNonNull(locale, "[locale] is required");
+    }
+
+    public Validator(Class<?> type) {
+        this(type, Locale.getDefault());
+    }
+
+    public Validator(Class<?> type, Locale locale) {
+        this(Objects.requireNonNull(type, "[type] is required").getSimpleName(), locale);
     }
 
     public String getPojo() {
         return pojo;
+    }
+
+    public Locale getLocale() {
+        return locale;
     }
 
     @Override
