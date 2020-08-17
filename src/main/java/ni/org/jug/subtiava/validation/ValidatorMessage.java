@@ -44,146 +44,141 @@ public class ValidatorMessage {
     }
 
     public String fieldNotNull() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_NOT_NULL));
+        return errorMessage(BundleConstraintKey.FIELD_NOT_NULL);
     }
 
     public String fieldAlwaysNull() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_ALWAYS_NULL));
+        return errorMessage(BundleConstraintKey.FIELD_ALWAYS_NULL);
     }
 
     public String fieldNotEmpty() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_NOT_EMPTY));
+        return errorMessage(BundleConstraintKey.FIELD_NOT_EMPTY);
     }
 
     public String fieldNotBlank() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_NOT_BLANK));
+        return errorMessage(BundleConstraintKey.FIELD_NOT_BLANK);
     }
 
     public String fieldMinLength(int length) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MIN_LENGTH),
-                ConstraintFieldToken.LENGTH_TOKEN.asWord(length));
+        return errorMessage(BundleConstraintKey.FIELD_MIN_LENGTH, ConstraintFieldToken.LENGTH_TOKEN.asWord(length));
     }
 
     public String fieldMaxLength(int length) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MAX_LENGTH), ConstraintFieldToken.LENGTH_TOKEN.asWord(length));
+        return errorMessage(BundleConstraintKey.FIELD_MAX_LENGTH, ConstraintFieldToken.LENGTH_TOKEN.asWord(length));
     }
 
     public String fieldPattern() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_PATTERN));
+        return errorMessage(BundleConstraintKey.FIELD_PATTERN);
     }
 
     public String fieldGreaterThanOrEqual(Long number) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_GREATER_OR_EQUAL),
-                ConstraintFieldToken.NUMBER_TOKEN.asWord(number));
+        return errorMessage(BundleConstraintKey.FIELD_GREATER_OR_EQUAL, ConstraintFieldToken.NUMBER_TOKEN.asWord(number));
     }
 
     public String fieldGreaterThanOrEqual(BigDecimal number) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_GREATER_OR_EQUAL),
-                ConstraintFieldToken.NUMBER_TOKEN.asWord(number.toPlainString()));
+        return errorMessage(BundleConstraintKey.FIELD_GREATER_OR_EQUAL, ConstraintFieldToken.NUMBER_TOKEN.asWord(number.toPlainString()));
     }
 
     public String fieldLessThanOrEqual(Long number) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_LESS_OR_EQUAL),
-                ConstraintFieldToken.NUMBER_TOKEN.asWord(number));
+        return errorMessage(BundleConstraintKey.FIELD_LESS_OR_EQUAL, ConstraintFieldToken.NUMBER_TOKEN.asWord(number));
     }
 
     public String fieldLessThanOrEqual(BigDecimal number) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_LESS_OR_EQUAL),
-                ConstraintFieldToken.NUMBER_TOKEN.asWord(number.toPlainString()));
+        return errorMessage(BundleConstraintKey.FIELD_LESS_OR_EQUAL, ConstraintFieldToken.NUMBER_TOKEN.asWord(number.toPlainString()));
     }
 
     public String fieldWithinOptions(long[] numbers) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_WITHIN_OPTIONS),
+        return errorMessage(BundleConstraintKey.FIELD_WITHIN_OPTIONS,
                 ConstraintFieldToken.OPTIONS_TOKEN.asWord(Arrays.toString(numbers)));
     }
 
     public String fieldWithinOptions(BigDecimal[] numbers) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_WITHIN_OPTIONS),
+        return errorMessage(BundleConstraintKey.FIELD_WITHIN_OPTIONS,
                 ConstraintFieldToken.OPTIONS_TOKEN.asWord(Arrays.toString(numbers)));
     }
 
     public String fieldWithinOptions(String[] options) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_WITHIN_OPTIONS),
+        return errorMessage(BundleConstraintKey.FIELD_WITHIN_OPTIONS,
                 ConstraintFieldToken.OPTIONS_TOKEN.asWord(Arrays.toString(options)));
     }
 
     public String fieldPositiveValue() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_POSITIVE_VALUE));
+        return errorMessage(BundleConstraintKey.FIELD_POSITIVE_VALUE);
     }
 
     public String fieldNegativeValue() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_NEGATIVE_VALUE));
+        return errorMessage(BundleConstraintKey.FIELD_NEGATIVE_VALUE);
     }
 
     public String fieldInThePast() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_IN_THE_PAST));
+        return errorMessage(BundleConstraintKey.FIELD_IN_THE_PAST);
     }
 
     public String fieldInThePastOrPresent() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_IN_THE_PAST_OR_PRESENT));
+        return errorMessage(BundleConstraintKey.FIELD_IN_THE_PAST_OR_PRESENT);
     }
 
     public String fieldInTheFuture() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_IN_THE_FUTURE));
+        return errorMessage(BundleConstraintKey.FIELD_IN_THE_FUTURE);
     }
 
     public String fieldInTheFutureOrPresent() {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_IN_THE_FUTURE_OR_PRESENT));
+        return errorMessage(BundleConstraintKey.FIELD_IN_THE_FUTURE_OR_PRESENT);
     }
 
     public String fieldMinAge(int age) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MIN_AGE), ConstraintFieldToken.AGE_TOKEN.asWord(age));
+        return errorMessage(BundleConstraintKey.FIELD_MIN_AGE, ConstraintFieldToken.AGE_TOKEN.asWord(age));
     }
 
     public String fieldMaxAge(int age) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MAX_AGE), ConstraintFieldToken.AGE_TOKEN.asWord(age));
+        return errorMessage(BundleConstraintKey.FIELD_MAX_AGE, ConstraintFieldToken.AGE_TOKEN.asWord(age));
     }
 
     public String fieldEqualAge(int age) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_EQUAL_AGE), ConstraintFieldToken.AGE_TOKEN.asWord(age));
+        return errorMessage(BundleConstraintKey.FIELD_EQUAL_AGE, ConstraintFieldToken.AGE_TOKEN.asWord(age));
     }
 
     public String fieldMinYear(int year) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MIN_YEAR), ConstraintFieldToken.YEAR_TOKEN.asWord(year));
+        return errorMessage(BundleConstraintKey.FIELD_MIN_YEAR, ConstraintFieldToken.YEAR_TOKEN.asWord(year));
     }
 
     public String fieldMaxYear(int year) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MAX_YEAR), ConstraintFieldToken.YEAR_TOKEN.asWord(year));
+        return errorMessage(BundleConstraintKey.FIELD_MAX_YEAR, ConstraintFieldToken.YEAR_TOKEN.asWord(year));
     }
 
     public String fieldEqualYear(int year) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_EQUAL_YEAR), ConstraintFieldToken.YEAR_TOKEN.asWord(year));
+        return errorMessage(BundleConstraintKey.FIELD_EQUAL_YEAR, ConstraintFieldToken.YEAR_TOKEN.asWord(year));
     }
 
     public String fieldMinMonth(int month) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MIN_MONTH), ConstraintFieldToken.MONTH_TOKEN.asWord(month));
+        return errorMessage(BundleConstraintKey.FIELD_MIN_MONTH, ConstraintFieldToken.MONTH_TOKEN.asWord(month));
     }
 
     public String fieldMaxMonth(int month) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MAX_MONTH), ConstraintFieldToken.MONTH_TOKEN.asWord(month));
+        return errorMessage(BundleConstraintKey.FIELD_MAX_MONTH, ConstraintFieldToken.MONTH_TOKEN.asWord(month));
     }
 
     public String fieldEqualMonth(int month) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_EQUAL_MONTH), ConstraintFieldToken.MONTH_TOKEN.asWord(month));
+        return errorMessage(BundleConstraintKey.FIELD_EQUAL_MONTH, ConstraintFieldToken.MONTH_TOKEN.asWord(month));
     }
 
     public String fieldMinDay(int day) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MIN_DAY), ConstraintFieldToken.DAY_TOKEN.asWord(day));
+        return errorMessage(BundleConstraintKey.FIELD_MIN_DAY, ConstraintFieldToken.DAY_TOKEN.asWord(day));
     }
 
     public String fieldMaxDay(int day) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_MAX_DAY), ConstraintFieldToken.DAY_TOKEN.asWord(day));
+        return errorMessage(BundleConstraintKey.FIELD_MAX_DAY, ConstraintFieldToken.DAY_TOKEN.asWord(day));
     }
 
     public String fieldEqualDay(int day) {
-        return errorMessage(constraintKeys.get(BundleConstraintKey.FIELD_EQUAL_DAY), ConstraintFieldToken.DAY_TOKEN.asWord(day));
+        return errorMessage(BundleConstraintKey.FIELD_EQUAL_DAY, ConstraintFieldToken.DAY_TOKEN.asWord(day));
     }
 
-    private String errorMessage(String key) {
+    private String errorMessage(BundleConstraintKey key) {
         return errorMessage(key, null);
     }
 
-    private String errorMessage(String key, ReservedWord... args) {
+    private String errorMessage(BundleConstraintKey key, ReservedWord... args) {
         int size = 2 + (args == null ? 0 : args.length);
         List<ReservedWord> words = new ArrayList<>(size);
         words.add(coordinate.asPojoReservedWord());
@@ -193,7 +188,7 @@ public class ValidatorMessage {
                 words.add(args[i]);
             }
         }
-        String message = getBundleString(bundle, key);
+        String message = getBundleString(bundle, constraintKeys.get(key));
         return resolveMessage(message, words);
     }
 
