@@ -21,7 +21,7 @@ public class ValidatorMessage {
     private final Locale locale;
     private final ResourceBundle bundle;
     private final ConstraintCoordinate coordinate;
-    private final Map<BundleConstraintKey, String> constraintKeys = new HashMap<>(40);
+    private final Map<BundleConstraintKey, String> constraintKeys = new HashMap<>(BundleConstraintKey.BUNDLE_KEYS.size());
 
     public ValidatorMessage(ConstraintCoordinate coordinate) {
         this(coordinate, Locale.getDefault());
@@ -31,10 +31,7 @@ public class ValidatorMessage {
         this.locale = Objects.requireNonNull(locale, "[locale] is required");
         this.bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
         this.coordinate = Objects.requireNonNull(coordinate, "[coordinate] is required");
-
-        for (BundleConstraintKey key : BundleConstraintKey.values()) {
-            constraintKeys.put(key, key.name().toLowerCase());
-        }
+        this.constraintKeys.putAll(BundleConstraintKey.BUNDLE_KEYS);
     }
 
     public void constraintKey(BundleConstraintKey key, String newKey) {
@@ -242,5 +239,12 @@ public class ValidatorMessage {
         FIELD_MIN_DAY,
         FIELD_MAX_DAY,
         FIELD_EQUAL_DAY;
+
+        static final Map<BundleConstraintKey, String> BUNDLE_KEYS = new HashMap<>(40);
+        static {
+            for (BundleConstraintKey key : BundleConstraintKey.values()) {
+                BUNDLE_KEYS.put(key, key.name().toLowerCase());
+            }
+        }
     }
 }
