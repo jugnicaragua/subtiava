@@ -59,34 +59,30 @@ public final class Cedula {
             return false;
         }
         char[] chars = cedula.toCharArray();
-        for (int i = 0; i < NATIONAL_ID_LENGTH; i++) {
-            if (i >= 0 && i <= NATIONAL_ID_LENGTH - 2) {
-                if (!Character.isDigit(chars[i])) {
-                    return false;
-                }
-            } else {
-                char last = chars[i];
-                if (Character.isDigit(last)) {
-                    return false;
-                } else if (Character.isLetter(last)) {
-                    if (VALID_CHARACTERS.indexOf(Character.toUpperCase(last)) == -1) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
+        for (int i = 0; i < NATIONAL_ID_LENGTH - 1; i++) {
+            if (!Character.isDigit(chars[i])) {
+                return false;
+            }
+        }
+
+        char last = Character.toUpperCase(chars[NATIONAL_ID_LENGTH - 1]);
+        if (Character.isDigit(last)) {
+            return false;
+        } else if (Character.isLetter(last)) {
+            if (VALID_CHARACTERS.indexOf(last) == -1) {
+                return false;
             }
         }
 
         // Apply date validation
         String shortIsoDate = shortIsoDate(cedula);
-        String firstDate = new StringBuilder(10).append("19").append(shortIsoDate).toString();
-        String secondDate = new StringBuilder(10).append("20").append(shortIsoDate).toString();
+        String isoDate = new StringBuilder(10).append("19").append(shortIsoDate).toString();
         boolean isIsoDate;
 
-        isIsoDate = isIsoDate(firstDate);
+        isIsoDate = isIsoDate(isoDate);
         if (!isIsoDate) {
-            isIsoDate = isIsoDate(secondDate);
+            isoDate = new StringBuilder(10).append("20").append(shortIsoDate).toString();
+            isIsoDate = isIsoDate(isoDate);
         }
         if (!isIsoDate) {
             return false;
@@ -96,7 +92,7 @@ public final class Cedula {
         long base = Long.parseLong(Strings.first(cedula, NATIONAL_ID_LENGTH - 1));
         int index = (int) (base % VALID_CHARACTERS.length());
         char expectedCheckDigit = VALID_CHARACTERS.charAt(index);
-        return expectedCheckDigit == Character.toUpperCase(Strings.last(cedula));
+        return expectedCheckDigit == last;
     }
 
     private static String shortIsoDate(String cedula) {
@@ -110,9 +106,9 @@ public final class Cedula {
                 .toString();
     }
 
-    private static boolean isIsoDate(String aDate) {
+    private static boolean isIsoDate(String date) {
         try {
-            LocalDate.parse(aDate);
+            LocalDate.parse(date);
             return true;
         } catch (DateTimeParseException ex) {
             return false;
@@ -121,7 +117,7 @@ public final class Cedula {
 
     public static Cedula of(String cedula) {
         if (!validate(cedula)) {
-            throw new IllegalArgumentException("La cedula no es valida");
+            throw new IllegalArgumentException("La c\u00E9dula no es v\u00E1lida");
         }
         return new Cedula(cedula);
     }
